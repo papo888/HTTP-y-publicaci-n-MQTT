@@ -4,6 +4,8 @@ Este documento explica **cómo controlar el carro desde Postman** y cómo **veri
 
 ---
 
+- Link Chatgpt: [https://chatgpt.com/share/68e6ed8d-a234-8007-bf22-c4f699d1b919] 
+
 ## 🧩 1. Requisitos
 
 - ESP32 conectado al WiFi (en el Monitor Serie debe mostrar algo como):
