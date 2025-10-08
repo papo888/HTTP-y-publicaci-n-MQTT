@@ -18,6 +18,7 @@ Este documento explica **cómo controlar el carro desde Postman** y cómo **veri
   - Linux: `sudo apt install mosquitto-clients`
   - Windows: [https://mosquitto.org/download/](https://mosquitto.org/download/)
 
+  - Descargar y pasarle el código mqtt1 a la ESP32
 ---
 
 ## ⚙️ 2. Configurar Postman
