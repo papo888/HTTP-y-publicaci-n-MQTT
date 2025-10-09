@@ -26,6 +26,7 @@ Este documento explica **cómo controlar el carro desde Postman** y cómo **veri
 
 1. Abre Postman → **Import** → selecciona el archivo `docs/postman_collection.json` del proyecto.
    ![eje plo](a.png)
+   * *
    *Ejemplo de cómo debe quedar*
 3. Crea un **Environment** (entorno):
    - Nombre: `ESP32-Car`
@@ -49,7 +50,7 @@ Verifica conexión y estado:
   "motion_active": false
 }
 ```
-![postmove](Movef.png)
+![postmove](MoveF.png)
 ### `POST /api/move`
 Envía una instrucción de movimiento con parámetros:
 - `direction`: `forward|backward|left|right|stop`
