@@ -41,6 +41,8 @@ Este documento explica **cómo controlar el carro desde Postman** y cómo **veri
 En la colección **ESP32 Car HTTP + MQTT**:
 ![getHealth](Health.png)
 ### `GET /health`
+* *
+   *Verifica el estado*
 Verifica conexión y estado:
 ```json
 {
@@ -51,6 +53,8 @@ Verifica conexión y estado:
 }
 ```
 ![postmove](MoveF.png)
+* *
+   *Mueve hacia adelante*
 ### `POST /api/move`
 Envía una instrucción de movimiento con parámetros:
 - `direction`: `forward|backward|left|right|stop`
@@ -72,8 +76,10 @@ Respuesta esperada:
 }
 ```
 ![TurnLeft](TurnL.png)
+* *
 *Turn Left*
 ![Stop](Stop.png)
+* *
 *Stop*
 ---
 
