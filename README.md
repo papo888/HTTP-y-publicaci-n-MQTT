@@ -40,9 +40,9 @@ Este documento explica **cómo controlar el carro desde Postman** y cómo **veri
 
 En la colección **ESP32 Car HTTP + MQTT**:
 ![getHealth](Health.png)
-### `GET /health`
 * *
    *Verifica el estado*
+### `GET /health`
 Verifica conexión y estado:
 ```json
 {
@@ -77,10 +77,10 @@ Respuesta esperada:
 ```
 ![TurnLeft](TurnL.png)
 * *
-*Turn Left*
+*TGira hacia la izquierda*
 ![Stop](Stop.png)
 * *
-*Stop*
+*Para el carro*
 ---
 
 ## 4. Verificar MQTT con Mosquitto
