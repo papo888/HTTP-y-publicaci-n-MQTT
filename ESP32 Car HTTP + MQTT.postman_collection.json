@@ -1,0 +1,151 @@
+{
+	"info": {
+		"_postman_id": "993e79bf-d556-4870-9450-225a3c85a5c5",
+		"name": "ESP32 Car HTTP + MQTT",
+		"description": "Colección de pruebas para /health y /api/move",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34202553",
+		"_collection_link": "https://www.postman.com/jpapo/workspace/local/collection/34202553-993e79bf-d556-4870-9450-225a3c85a5c5?action=share&source=collection_link&creator=34202553"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{esp32_ip}}/health",
+					"protocol": "http",
+					"host": [
+						"{{esp32_ip}}"
+					],
+					"path": [
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Move Forward (2s, 60%)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "direction",
+							"value": "forward"
+						},
+						{
+							"key": "speed",
+							"value": "60"
+						},
+						{
+							"key": "duration_ms",
+							"value": "2000"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{esp32_ip}}/api/move",
+					"protocol": "http",
+					"host": [
+						"{{esp32_ip}}"
+					],
+					"path": [
+						"api",
+						"move"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Turn Left (1s, 50%)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{esp32_ip}}/api/move?direction=left&speed=50&duration_ms=1000",
+					"protocol": "http",
+					"host": [
+						"{{esp32_ip}}"
+					],
+					"path": [
+						"api",
+						"move"
+					],
+					"query": [
+						{
+							"key": "direction",
+							"value": "left"
+						},
+						{
+							"key": "speed",
+							"value": "50"
+						},
+						{
+							"key": "duration_ms",
+							"value": "1000"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Stop",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "direction",
+							"value": "stop"
+						},
+						{
+							"key": "speed",
+							"value": "0"
+						},
+						{
+							"key": "duration_ms",
+							"value": "10"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{esp32_ip}}/api/move",
+					"protocol": "http",
+					"host": [
+						"{{esp32_ip}}"
+					],
+					"path": [
+						"api",
+						"move"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "esp32_ip",
+			"value": "192.168.1.123"
+		}
+	]
+}
