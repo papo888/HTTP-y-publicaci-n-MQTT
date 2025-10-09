@@ -4,7 +4,7 @@ Este documento explica **cómo controlar el carro desde Postman** y cómo **veri
 
 ---
 
-- Link Chatgpt: [https://chatgpt.com/share/68e6ed8d-a234-8007-bf22-c4f699d1b919] 
+- Link Chatgpt: [https://chatgpt.com/share/68e6ef12-c018-8007-91c2-bfa94164f942] 
 
 ## 🧩 1. Requisitos
 
