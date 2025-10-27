@@ -6,8 +6,8 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <PubSubClient.h>
-#include "config.h"   // aquí van todos los #define
-#include "sensor.h"   // declara sensorInit() y readDistanceCm()
+#include "config.h"   // #define de pines, WiFi y MQTT (incluye MQTT_TOPIC_MOVEMENT / MQTT_TOPIC_DISTANCE)
+#include "sensor.h"   // sensorInit() y readDistanceCm()
 
 // =======================
 // Variables globales
@@ -33,16 +33,42 @@ void motorsStop();
 void applyMotion(const String& direction, uint8_t speedPct);
 void startMotion(const String& direction, uint8_t speedPct, uint32_t durationMs);
 void publishMoveMQTT(const String& clientIP, const String& direction, uint8_t speedPct, uint32_t durationMs, const String& status);
+void handleHealth();
+void handleMove();
+bool parseUint(const String& s, uint32_t& out);
+String jsonEscape(const String& s);
 
 // =======================
-// Funciones principales
+// Helpers MQTT / JSON
 // =======================
 void ensureMqtt() {
   if (mqttClient.connected()) return;
   String cid = String(MQTT_CLIENTID_PREFIX) + String((uint32_t)ESP.getEfuseMac(), HEX);
-  mqttClient.connect(cid.c_str());
+  mqttClient.connect(cid.c_str(), MQTT_USER, MQTT_PASS);
 }
 
+String jsonEscape(const String& s) {
+  String out; out.reserve(s.length()+8);
+  for (size_t i = 0; i < s.length(); ++i) {
+    char c = s[i];
+    if (c=='"') out += "\\\"";
+    else if (c=='\\') out += "\\\\";
+    else if (c=='\n') out += "\\n";
+    else out += c;
+  }
+  return out;
+}
+
+bool parseUint(const String& s, uint32_t& out) {
+  if (s.length()==0) return false;
+  for (size_t i=0;i<s.length();++i) if (!isDigit(s[i])) return false;
+  out = s.toInt();
+  return true;
+}
+
+// =======================
+// HTTP Handlers
+// =======================
 void handleHealth() {
   String body = "{";
   body += "\"status\":\"ok\",";
@@ -53,6 +79,50 @@ void handleHealth() {
   body += "\"telemetry_topic\":\"" MQTT_TOPIC_DISTANCE "\"";
   body += "}";
   server.send(200, "application/json", body);
+}
+
+void handleMove() {
+  // Acepta GET (params en URL) o POST x-www-form-urlencoded
+  String dir = server.arg("direction");
+  String sp  = server.arg("speed");
+  String dur = server.arg("duration_ms");
+
+  dir.toLowerCase();
+  if (dir != "forward" && dir != "backward" && dir != "left" && dir != "right" && dir != "stop") {
+    server.send(400, "application/json", "{\"error\":\"direction must be one of forward|backward|left|right|stop\"}");
+    return;
+  }
+
+  uint32_t speedPct32 = 0;
+  if (!parseUint(sp, speedPct32) || speedPct32>100) {
+    server.send(400, "application/json", "{\"error\":\"speed must be integer 0..100\"}");
+    return;
+  }
+  uint8_t speedPct = (uint8_t)speedPct32;
+
+  uint32_t duration = 0;
+  if (!parseUint(dur, duration) || duration>5000) {
+    server.send(400, "application/json", "{\"error\":\"duration_ms must be integer 0..5000\"}");
+    return;
+  }
+
+  if (motion.active) {
+    server.send(409, "application/json", "{\"error\":\"motion already active; try again later\"}");
+    return;
+  }
+
+  String clientIP = server.client().remoteIP().toString();
+  startMotion(dir, speedPct, duration);
+  publishMoveMQTT(clientIP, dir, speedPct, duration, "accepted");
+
+  String body = "{";
+  body += "\"status\":\"accepted\",";
+  body += "\"direction\":\"" + dir + "\",";
+  body += "\"speed\":" + String(speedPct) + ",";
+  body += "\"duration_ms\":" + String(duration) + ",";
+  body += "\"client_ip\":\"" + clientIP + "\"";
+  body += "}";
+  server.send(202, "application/json", body);
 }
 
 // ======== Motores ========
@@ -71,8 +141,8 @@ void applyMotion(const String& direction, uint8_t speedPct) {
     digitalWrite(PIN_IN1, HIGH); digitalWrite(PIN_IN2, LOW);
     digitalWrite(PIN_IN3, HIGH); digitalWrite(PIN_IN4, LOW);
   } else if (direction == "backward") {
-    digitalWrite(PIN_IN1, LOW); digitalWrite(PIN_IN2, HIGH);
-    digitalWrite(PIN_IN3, LOW); digitalWrite(PIN_IN4, HIGH);
+    digitalWrite(PIN_IN1, LOW);  digitalWrite(PIN_IN2, HIGH);
+    digitalWrite(PIN_IN3, LOW);  digitalWrite(PIN_IN4, HIGH);
   } else if (direction == "left") {
     digitalWrite(PIN_IN1, LOW);  digitalWrite(PIN_IN2, HIGH);
     digitalWrite(PIN_IN3, HIGH); digitalWrite(PIN_IN4, LOW);
@@ -101,6 +171,8 @@ void startMotion(const String& direction, uint8_t speedPct, uint32_t durationMs)
 // =======================
 void setup() {
   Serial.begin(115200);
+
+  // Motores + PWM
   pinMode(PIN_IN1, OUTPUT);
   pinMode(PIN_IN2, OUTPUT);
   pinMode(PIN_IN3, OUTPUT);
@@ -110,28 +182,38 @@ void setup() {
   ledcAttachPin(PIN_ENA, PWM_CH_A);
   ledcSetup(PWM_CH_B, PWM_FREQ, PWM_RES);
   ledcAttachPin(PIN_ENB, PWM_CH_B);
-
   motorsStop();
 
+  // WiFi
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
-  Serial.println(WiFi.localIP());
+  Serial.println(); Serial.print("IP: "); Serial.println(WiFi.localIP());
 
+  // MQTT
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
   ensureMqtt();
 
+  // HTTP routes
   server.on("/health", HTTP_GET, handleHealth);
+  server.on("/api/move", HTTP_ANY, handleMove);   // ← Ruta de movimiento
+  server.onNotFound([](){
+    server.send(404, "text/plain", String("Not found: ") + server.uri());
+  });
   server.begin();
+  Serial.println("HTTP server started");
 
+  // Sensor (mock o real)
   sensorInit();
 }
 
 void loop() {
   server.handleClient();
+
   if (!mqttClient.connected()) ensureMqtt();
   mqttClient.loop();
 
-  if (motion.active && millis() - motion.startedAt >= motion.durationMs) {
+  // Fin de movimiento por duración
+  if (motion.active && (millis() - motion.startedAt >= motion.durationMs)) {
     motorsStop();
     motion.active = false;
   }
@@ -142,10 +224,31 @@ void loop() {
     if (now - lastTelemetry >= TELEMETRY_PERIOD_MS) {
       lastTelemetry = now;
       float d = readDistanceCm();
-      char payload[128];
-      snprintf(payload, sizeof(payload),
-        "{\"distance\":%.2f,\"unit\":\"cm\",\"ts\":%lu}", d, now);
+      char payload[160];
+      if (isnan(d)) {
+        snprintf(payload, sizeof(payload),
+          "{\"device\":\"esp32car\",\"type\":\"ultrasonic\",\"unit\":\"cm\",\"distance\":null,\"ts\":%lu}", now);
+      } else {
+        snprintf(payload, sizeof(payload),
+          "{\"device\":\"esp32car\",\"type\":\"ultrasonic\",\"unit\":\"cm\",\"distance\":%.2f,\"ts\":%lu}", d, now);
+      }
       mqttClient.publish(MQTT_TOPIC_DISTANCE, payload, true);
     }
   }
+}
+
+// =======================
+// MQTT publicación de comandos aceptados
+// =======================
+void publishMoveMQTT(const String& clientIP, const String& direction, uint8_t speedPct, uint32_t durationMs, const String& status) {
+  if (!mqttClient.connected()) return;
+  String payload = "{";
+  payload += "\"status\":\"" + status + "\",";
+  payload += "\"direction\":\"" + jsonEscape(direction) + "\",";
+  payload += "\"speed\":" + String(speedPct) + ",";
+  payload += "\"duration_ms\":" + String(durationMs) + ",";
+  payload += "\"client_ip\":\"" + jsonEscape(clientIP) + "\",";
+  payload += "\"ts\":" + String((uint32_t)millis());
+  payload += "}";
+  mqttClient.publish(MQTT_TOPIC_MOVEMENT, payload.c_str());
 }
