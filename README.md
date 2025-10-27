@@ -138,10 +138,10 @@ esp32car/commands {"status":"accepted","direction":"forward","speed":60,"duratio
 ---
 
  **Listo:** con esto puedes controlar el carro desde Postman y verificar en Mosquitto que las instrucciones se publican correctamente.
-
-````markdown
+ 
 ## 8. Telemetría ultrasónica (mock o sensor real)
 
+````markdown
 Además de publicar las instrucciones de movimiento, el ESP32 también **envía lecturas de distancia por MQTT cada segundo.**
 
 - **Tema MQTT de comandos:** `esp32car/commands`  
@@ -149,7 +149,7 @@ Además de publicar las instrucciones de movimiento, el ESP32 también **envía 
 
 ---
 
-### 💡 ¿Qué significa?
+### ¿Qué significa?
 
 El ESP32 mide (o simula) la distancia con el sensor ultrasónico **HC-SR04** y publica lecturas automáticas, sin que el usuario haga nada.
 
@@ -171,7 +171,7 @@ Cada publicación tiene este formato JSON:
 
 ---
 
-### ⚙️ Modo de simulación (mock)
+### Modo de simulación (mock)
 
 Por defecto el proyecto está configurado con:
 
@@ -201,7 +201,7 @@ esp32car/telemetry/distance {"device":"esp32car","type":"ultrasonic","unit":"cm"
 
 ---
 
-### 🧪 Prueba completa con Postman + Mosquitto
+### Prueba completa con Postman + Mosquitto
 
 1. Abre una terminal y suscríbete a **ambos topics**:
 
@@ -224,11 +224,11 @@ esp32car/telemetry/distance {"device":"esp32car","type":"ultrasonic","unit":"cm"
    * Mensajes del topic **`esp32car/commands`** (instrucciones del carro)
    * Mensajes de **`esp32car/telemetry/distance`** (distancias en cm)
 
-💡 Esto demuestra que el ESP32 **recibe órdenes** y **reporta datos ambientales** por MQTT simultáneamente.
+ Esto demuestra que el ESP32 **recibe órdenes** y **reporta datos ambientales** por MQTT simultáneamente.
 
 ---
 
-### 🧰 Ejemplo gráfico del flujo
+### Ejemplo gráfico del flujo
 
 ```
 POSTMAN  --->  ESP32 (HTTP API)
