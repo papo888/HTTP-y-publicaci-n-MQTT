@@ -138,3 +138,89 @@ esp32car/commands {"status":"accepted","direction":"forward","speed":60,"duratio
 ---
 
  **Listo:** con esto puedes controlar el carro desde Postman y verificar en Mosquitto que las instrucciones se publican correctamente.
+
+ ## 8. Telemetría ultrasónica (mock o sensor real)
+
+Además de publicar las instrucciones de movimiento, el ESP32 también **envía lecturas de distancia por MQTT cada segundo.**
+
+- **Tema MQTT de comandos:** `esp32car/commands`  
+- **Tema MQTT de telemetría:** `esp32car/telemetry/distance`
+
+---
+
+### ¿Qué significa?
+
+El ESP32 mide (o simula) la distancia con el sensor ultrasónico **HC-SR04** y publica lecturas automáticas, sin que el usuario haga nada.
+
+Cada publicación tiene este formato JSON:
+
+```json
+{
+  "device": "esp32car",
+  "type": "ultrasonic",
+  "unit": "cm",
+  "distance": 85.72,
+  "ts": 561234
+}
+distance: valor en centímetros (mock o real)
+
+ts: timestamp interno del ESP32
+
+Si no hay lectura válida, distance puede ser null
+
+⚙️ Modo de simulación (mock)
+
+Por defecto el proyecto está configurado con:
+
+#define USE_MOCK_SENSOR 1
+
+
+Esto genera lecturas falsas entre 8 – 200 cm, permitiendo probar sin conectar el sensor físico.
+
+Si se usa el sensor real, solo hay que comentar esa línea en config.h y conectar los pines TRIG y ECHO (usando un divisor de voltaje para ECHO → 3.3 V).
+
+🔍 Ver las lecturas MQTT con Mosquitto
+
+En una terminal nueva, suscríbete al topic de telemetría:
+
+mosquitto_sub -h test.mosquitto.org -t esp32car/telemetry/distance -v
+
+
+Deberías ver cada segundo algo como:
+
+esp32car/telemetry/distance {"device":"esp32car","type":"ultrasonic","unit":"cm","distance":92.37,"ts":123456}
+
+🧪 Prueba completa con Postman + Mosquitto
+
+Abre una terminal y suscríbete a ambos topics:
+
+mosquitto_sub -h test.mosquitto.org -t esp32car/commands -v &
+mosquitto_sub -h test.mosquitto.org -t esp32car/telemetry/distance -v &
+
+
+En Postman:
+
+Ejecuta GET /health
+
+Luego:
+
+POST /api/move?direction=forward&speed=50&duration_ms=2000
+
+
+En la terminal verás:
+
+Mensajes del topic esp32car/commands (instrucciones del carro)
+
+Mensajes de esp32car/telemetry/distance (distancias en cm)
+
+💡 Esto demuestra que el ESP32 recibe órdenes y reporta datos ambientales por MQTT simultáneamente.
+
+🧰 Ejemplo gráfico del flujo
+POSTMAN  --->  ESP32 (HTTP API)
+                  |
+                  |  → movimiento del carro
+                  |
+                  ↓
+              MQTT broker (test.mosquitto.org)
+                ↙             ↘
+esp32car/commands        esp32car/telemetry/distance
