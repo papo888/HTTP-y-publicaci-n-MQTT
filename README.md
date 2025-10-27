@@ -139,7 +139,8 @@ esp32car/commands {"status":"accepted","direction":"forward","speed":60,"duratio
 
  **Listo:** con esto puedes controlar el carro desde Postman y verificar en Mosquitto que las instrucciones se publican correctamente.
 
- ## 8. Telemetría ultrasónica (mock o sensor real)
+````markdown
+## 8. Telemetría ultrasónica (mock o sensor real)
 
 Además de publicar las instrucciones de movimiento, el ESP32 también **envía lecturas de distancia por MQTT cada segundo.**
 
@@ -148,7 +149,7 @@ Además de publicar las instrucciones de movimiento, el ESP32 también **envía 
 
 ---
 
-### ¿Qué significa?
+### 💡 ¿Qué significa?
 
 El ESP32 mide (o simula) la distancia con el sensor ultrasónico **HC-SR04** y publica lecturas automáticas, sin que el usuario haga nada.
 
@@ -162,60 +163,74 @@ Cada publicación tiene este formato JSON:
   "distance": 85.72,
   "ts": 561234
 }
-distance: valor en centímetros (mock o real)
+````
 
-ts: timestamp interno del ESP32
+* `distance`: valor en centímetros (mock o real)
+* `ts`: timestamp interno del ESP32
+* Si no hay lectura válida, `distance` puede ser `null`
 
-Si no hay lectura válida, distance puede ser null
+---
 
-⚙️ Modo de simulación (mock)
+### ⚙️ Modo de simulación (mock)
 
 Por defecto el proyecto está configurado con:
 
+```cpp
 #define USE_MOCK_SENSOR 1
+```
 
+Esto genera lecturas falsas entre **8 – 200 cm**, permitiendo probar sin conectar el sensor físico.
 
-Esto genera lecturas falsas entre 8 – 200 cm, permitiendo probar sin conectar el sensor físico.
+Si se usa el sensor real, solo hay que **comentar esa línea en `config.h`** y conectar los pines **TRIG** y **ECHO** (usando un divisor de voltaje para ECHO → 3.3 V).
 
-Si se usa el sensor real, solo hay que comentar esa línea en config.h y conectar los pines TRIG y ECHO (usando un divisor de voltaje para ECHO → 3.3 V).
+---
 
-🔍 Ver las lecturas MQTT con Mosquitto
+### 🔍 Ver las lecturas MQTT con Mosquitto
 
-En una terminal nueva, suscríbete al topic de telemetría:
+En una terminal nueva, suscríbete al **topic de telemetría**:
 
+```bash
 mosquitto_sub -h test.mosquitto.org -t esp32car/telemetry/distance -v
-
+```
 
 Deberías ver cada segundo algo como:
 
+```
 esp32car/telemetry/distance {"device":"esp32car","type":"ultrasonic","unit":"cm","distance":92.37,"ts":123456}
+```
 
-🧪 Prueba completa con Postman + Mosquitto
+---
 
-Abre una terminal y suscríbete a ambos topics:
+### 🧪 Prueba completa con Postman + Mosquitto
 
-mosquitto_sub -h test.mosquitto.org -t esp32car/commands -v &
-mosquitto_sub -h test.mosquitto.org -t esp32car/telemetry/distance -v &
+1. Abre una terminal y suscríbete a **ambos topics**:
 
+   ```bash
+   mosquitto_sub -h test.mosquitto.org -t esp32car/commands -v &
+   mosquitto_sub -h test.mosquitto.org -t esp32car/telemetry/distance -v &
+   ```
 
-En Postman:
+2. En **Postman**:
 
-Ejecuta GET /health
+   * Ejecuta `GET /health`
+   * Luego:
 
-Luego:
+     ```
+     POST /api/move?direction=forward&speed=50&duration_ms=2000
+     ```
 
-POST /api/move?direction=forward&speed=50&duration_ms=2000
+3. En la terminal verás:
 
+   * Mensajes del topic **`esp32car/commands`** (instrucciones del carro)
+   * Mensajes de **`esp32car/telemetry/distance`** (distancias en cm)
 
-En la terminal verás:
+💡 Esto demuestra que el ESP32 **recibe órdenes** y **reporta datos ambientales** por MQTT simultáneamente.
 
-Mensajes del topic esp32car/commands (instrucciones del carro)
+---
 
-Mensajes de esp32car/telemetry/distance (distancias en cm)
+### 🧰 Ejemplo gráfico del flujo
 
-💡 Esto demuestra que el ESP32 recibe órdenes y reporta datos ambientales por MQTT simultáneamente.
-
-🧰 Ejemplo gráfico del flujo
+```
 POSTMAN  --->  ESP32 (HTTP API)
                   |
                   |  → movimiento del carro
@@ -224,3 +239,11 @@ POSTMAN  --->  ESP32 (HTTP API)
               MQTT broker (test.mosquitto.org)
                 ↙             ↘
 esp32car/commands        esp32car/telemetry/distance
+```
+
+```
+
+---
+
+¿Quieres que te dé ahora el bloque **“9. Resumen final del proyecto”** también en el mismo formato Markdown (con tablas y checklist) para cerrar perfectamente tu README?
+```
