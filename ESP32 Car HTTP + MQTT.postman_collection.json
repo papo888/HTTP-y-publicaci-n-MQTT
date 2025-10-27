@@ -28,8 +28,11 @@
 		},
 		{
 			"name": "Move Forward (2s, 60%)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
-				"method": "POST",
+				"method": "GET",
 				"header": [
 					{
 						"key": "Content-Type",
@@ -54,7 +57,7 @@
 					]
 				},
 				"url": {
-					"raw": "http://{{esp32_ip}}/api/move",
+					"raw": "http://{{esp32_ip}}/api/move?direction=forward&speed=60&duration_ms=2000",
 					"protocol": "http",
 					"host": [
 						"{{esp32_ip}}"
@@ -62,6 +65,20 @@
 					"path": [
 						"api",
 						"move"
+					],
+					"query": [
+						{
+							"key": "direction",
+							"value": "forward"
+						},
+						{
+							"key": "speed",
+							"value": "60"
+						},
+						{
+							"key": "duration_ms",
+							"value": "2000"
+						}
 					]
 				}
 			},
