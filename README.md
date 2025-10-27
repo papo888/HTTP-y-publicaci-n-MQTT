@@ -1,4 +1,4 @@
-# ESP32 Car HTTP + MQTT: Guía de uso con Postman y Mosquitto
+# ESP32 Car HTTP + MQTT: Guía de uso con Postman, Mosquitto y sensor de distancia.
 
 Este documento explica **cómo controlar el carro desde Postman** y cómo **verificar las publicaciones MQTT** en `test.mosquitto.org` usando `mosquitto_sub`.
 
