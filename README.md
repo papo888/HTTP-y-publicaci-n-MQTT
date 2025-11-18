@@ -39,8 +39,6 @@ El proceso realizado fue el siguiente:
 * **Imagen 3 – Con certificado cargado → conexión estable** y ** Telemetría recibida en tiempo real desde `mosquitto_sub`**
 ![3](3.png)
 
-Aquí tienes un párrafo perfecto para tu entrega:
-
 ---
 
 Además, todas las preguntas solicitadas en el taller fueron respondidas y se encuentran organizadas en un archivo **Markdown (`CERTIFICATES.md`)**, tal como se pidió en las instrucciones. De igual forma, **todo el código utilizado**, incluyendo el firmware del ESP32, las rutas HTTP, la configuración MQTT y los archivos auxiliares (`root_ca.h`, `settings.h`, etc.), está completamente disponible y versionado en este repositorio de **Git** correspondiente para su revisión.
