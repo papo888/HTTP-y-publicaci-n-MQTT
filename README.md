@@ -1,3 +1,46 @@
+# Evidencia – MQTT Seguro (TLS) + Telemetría del Robot ESP32
+
+En esta sección presento la evidencia completa del funcionamiento del robot ESP32 utilizando **MQTT seguro (TLS por puerto 8883)** contra el broker público **test.mosquitto.org**, así como la verificación desde el cliente y el estado interno expuesto por el endpoint **/health**.
+
+El proceso realizado fue el siguiente:
+
+1. **Configuración del ESP32 para usar MQTT sobre TLS**
+
+   * Se extrajo el certificado del broker usando `openssl s_client`.
+   * Se creó el archivo `root_ca.h` y se cargó en el firmware.
+   * El ESP32 usa `WiFiClientSecure` con `setCACert()` para validar el servidor.
+
+2. **Verificación de conexión desde el ESP32**
+
+   * El endpoint `/health` muestra si el módulo logró conectarse vía MQTT seguro.
+   * Una vez cargado el certificado correcto, el ESP32 reporta `mqtt_connected: true`.
+
+3. **Suscripción desde el cliente usando TLS**
+
+   * Desde mi Mac se realizó la suscripción a `esp32car/telemetry/distance` usando `mosquitto_sub` con `--cafile`.
+   * Se recibieron en tiempo real los valores de distancia enviados por el sensor ultrasónico.
+
+4. **Validación de funcionamiento completo**
+
+   * El robot está conectado, enviando telemetría periódica y sirviendo el endpoint HTTP.
+   * Se realizó captura de cada etapa: conexión parcial, error por certificado faltante y conexión final correcta.
+
+---
+
+### A continuación dejo las evidencias solicitadas:
+
+(ahora pones las imágenes tal como te lo pide tu profesor)
+
+* **Imagen 1 – Conexión MQTT segura exitosa**
+* ![1](1.png)
+* **Imagen 2 – Fallo al validar TLS sin certificado**
+* ![2](2.png)
+* **Imagen 3 – Con certificado cargado → conexión estable** y ** Telemetría recibida en tiempo real desde `mosquitto_sub`**
+![3](3.png)
+---
+
+# Estos eran talleres anteriores:
+
 # ESP32 Car HTTP + MQTT: Guía de uso con Postman, Mosquitto y sensor de distancia.
 
 Este documento explica **cómo controlar el carro desde Postman** y cómo **verificar las publicaciones MQTT** en `test.mosquitto.org` usando `mosquitto_sub`.
