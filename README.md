@@ -1,5 +1,6 @@
 # Evidencia – MQTT Seguro (TLS) + Telemetría del Robot ESP32
 Nicolás Clavijo y Juan Pbalo Parrado
+
 En esta sección presento la evidencia completa del funcionamiento del robot ESP32 utilizando **MQTT seguro (TLS por puerto 8883)** contra el broker público **test.mosquitto.org**, así como la verificación desde el cliente y el estado interno expuesto por el endpoint **/health**.
 
 El proceso realizado fue el siguiente:
