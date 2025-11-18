@@ -14,18 +14,19 @@
 #define PIN_IN4  32
 
 // PWM
-#define PWM_CH_A   0
-#define PWM_CH_B   1
-#define PWM_FREQ   20000
-#define PWM_RES    8
+#define PWM_CH_A 0
+#define PWM_CH_B 1
+#define PWM_FREQ 5000
+#define PWM_RES  8
+
 
 // === Pines HC-SR04 ===
 #define PIN_TRIG  5
 #define PIN_ECHO  18
 
 // === WiFi y MQTT ===
-#define WIFI_SSID      "."
-#define WIFI_PASSWORD  "nicolas01"
+#define WIFI_SSID      "JuanPablo 2.4"
+#define WIFI_PASSWORD  "1021632516"
 
 #define MQTT_HOST      "test.mosquitto.org"
 #define MQTT_PORT      1883
