@@ -3,17 +3,19 @@
  * Usa config.h, sensor.h y sensor.cpp
  */
 
+#include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
 #include <PubSubClient.h>
-#include "config.h"   // #define de pines, WiFi y MQTT (incluye MQTT_TOPIC_MOVEMENT / MQTT_TOPIC_DISTANCE)
-#include "sensor.h"   // sensorInit() y readDistanceCm()
+#include <WiFiClientSecure.h>
+#include "settings.h"
+#include "sensor.h"
 
 // =======================
 // Variables globales
 // =======================
 WebServer server(80);
-WiFiClient espClient;
+WiFiClientSecure espClient;
 PubSubClient mqttClient(espClient);
 
 struct Motion {
@@ -25,6 +27,7 @@ struct Motion {
 } motion;
 
 unsigned long lastTelemetry = 0;
+#include "root_ca.h"
 
 // =======================
 // Declaración de funciones
@@ -190,7 +193,8 @@ void setup() {
   Serial.println(); Serial.print("IP: "); Serial.println(WiFi.localIP());
 
   // MQTT
-  mqttClient.setServer(MQTT_HOST, MQTT_PORT);
+  espClient.setCACert(root_ca);
+  mqttClient.setServer(MQTT_HOST, 8883);
   ensureMqtt();
 
   // HTTP routes
